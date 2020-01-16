@@ -79,6 +79,15 @@ app.get("/saved", function(req, res) {
   });
 });
 
+app.get("/savednotes", function(req, res) {
+  Post.find({"body": true}).populate("notes").exec(function(error, articles) {
+    var hbsObject = {
+      article: articles
+    };
+    res.render("saved", hbsObject);
+  });
+});
+
 // A GET request to scrape the echojs website
 app.get("/scrape", function(req, res) {
   // First, we grab the body of the html with request
