@@ -29,7 +29,7 @@ app.use(bodyParser.urlencoded({
 }));
 
 // Make public a static dir
-app.use(express.static("public"));
+app.use(express.static(__dirname + '/public'));
 
 // Set Handlebars.
 var exphbs = require("express-handlebars");
@@ -41,8 +41,9 @@ app.engine("handlebars", exphbs({
 app.set("view engine", "handlebars");
 
 // Database configuration with mongoose
-mongoose.connect("mongodb://dbuser1:dbuser1@ds141043.mlab.com:41043/heroku_g1mk58pp");
-// mongoose.connect("mongodb://localhost/mongoscraper");
+// mongoose.connect("mongodb://dbuser1:dbuser1@ds141043.mlab.com:41043/heroku_g1mk58pp");
+
+mongoose.connect("mongodb://localhost/mongoscraper");
 var db = mongoose.connection;
 
 // Show any mongoose errors
@@ -63,7 +64,7 @@ app.get("/", function(req, res) {
   Post.find({"saved": false}, function(error, data) {
     var hbsObject = {
       article: data
-    };
+    };  
     console.log(hbsObject);
     res.render("home", hbsObject);
   });
@@ -100,7 +101,6 @@ app.get("/scrape", function(req, res) {
       });
 
     });
-      // Tell the browser that we finished scraping the text
        res.send("Scrape Complete");
 
   });
@@ -158,22 +158,6 @@ app.post("/articles/save/:id", function(req, res) {
       });
 });
 
-// Delete an article
-app.post("/articles/delete/:id", function(req, res) {
-      // Use the article id to find and update its saved boolean
-      Post.findOneAndUpdate({ "_id": req.params.id }, {"saved": false, "notes": []})
-      // Execute the above query
-      .exec(function(err, doc) {
-        // Log any errors
-        if (err) {
-          console.log(err);
-        }
-        else {
-          // Or send the document to the browser
-          res.send(doc);
-        }
-      });
-});
 
 
 // Create a new note
@@ -210,34 +194,7 @@ app.post("/notes/save/:id", function(req, res) {
   });
 });
 
-// Delete a note
-app.delete("/notes/delete/:note_id/:article_id", function(req, res) {
-  // Use the note id to find and delete it
-  Note.findOneAndRemove({ "_id": req.params.note_id }, function(err) {
-    // Log any errors
-    if (err) {
-      console.log(err);
-      res.send(err);
-    }
-    else {
-      Post.findOneAndUpdate({ "_id": req.params.article_id }, {$pull: {"notes": req.params.note_id}})
-       // Execute the above query
-        .exec(function(err) {
-          // Log any errors
-          if (err) {
-            console.log(err);
-            res.send(err);
-          }
-          else {
-            // Or send the note to the browser
-            res.send("Note Deleted");
-          }
-        });
-    }
-  });
-});
 
-// Listen on port
 app.listen(port, function() {
   console.log("App running on port " + port);
 });
